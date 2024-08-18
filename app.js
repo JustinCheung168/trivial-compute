@@ -4,12 +4,13 @@ import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
 import bodyParser from 'body-parser';
 import { initializeApp } from 'firebase/app';
+import axios from 'axios';
 
 
 // From Source
 import { createNewUser, signInUser, sessionAuth, signOutUser } from './src/firebase/fire-auth.js';
 import { createNewCategory, addTextOpenEndedQuestionToCategory, addTextMultipleChoiceQuestionToCategory, addMediaQuestionToCategory } from './src/firebase/questions/create-questions.js'
-import { readQuestionsFromCategory, readAllCategories, readAllQuestions } from './src/firebase/questions/read-questions.js'
+import { readQuestionsFromCategory, readAllCategories, readAllQuestions,getMediaUrl,fetchMediaContent} from './src/firebase/questions/read-questions.js'
 import { updateQuestion, updateCategory } from './src/firebase/questions/update-questions.js'
 import { deleteQuestion, deleteCategory } from './src/firebase/questions/delete-questions.js'
 import { getStorage } from "firebase/storage"
@@ -389,6 +390,49 @@ app.post('/api/signOut', (req, res) => {
 // /// ////////////////////
 // // Firebase Fire Store
 // /// ///////////////////
+// Get Media URL Endpoint
+app.get("/api/getMediaUrl", async (req, res) => {
+    const { filePath } = req.query;
+
+    if (!filePath) {
+        return res.status(400).json({ success: false, message: 'filePath query parameter is required' });
+    }
+
+    try {
+        const url = await getMediaUrl(filePath);
+        res.status(200).json({ success: true, url });
+    } catch (error) {
+        console.error('Error fetching media URL:', error);
+        res.status(500).json({ success: false, message: 'Failed to get media URL' });
+    }
+});
+
+// Fetch Media Content Endpoint
+app.get("/api/fetchMediaContent", async (req, res) => {
+    const { filePath } = req.query;
+
+    if (!filePath) {
+        return res.status(400).json({ success: false, message: 'filePath query parameter is required' });
+    }
+
+    try {
+        // Get the download URL for the file
+        const downloadURL = await getMediaUrl(filePath);
+
+        // Fetch the media file as a stream
+        const response = await axios.get(downloadURL, { responseType: 'stream' });
+
+        // Set appropriate headers
+        res.setHeader('Content-Type', response.headers['content-type']);
+        res.setHeader('Content-Length', response.headers['content-length']);
+
+        // Pipe the stream directly to the response
+        response.data.pipe(res);
+    } catch (error) {
+        console.error('Error fetching media content:', error);
+        res.status(500).json({ success: false, message: 'Failed to fetch media content' });
+    }
+});
 
 // Read Endpoints
 app.get("/api/readAllQuestions", async (req, res) => {
