@@ -8,7 +8,7 @@ import { initializeApp } from 'firebase/app';
 // From Source
 import { createNewUser, signInUser, sessionAuth, signOutUser } from './src/firebase/fire-auth.js';
 import { createNewCategory, addTextOpenEndedQuestionToCategory, addTextMultipleChoiceQuestionToCategory, addMediaQuestionToCategory } from './src/firebase/questions/create-questions.js'
-import { readQuestionsFromCategory, readAllCategories, readAllQuestions } from './src/firebase/questions/read-questions.js'
+import { readQuestionsFromCategory, readAllCategories, readAllQuestions,getMediaUrl,fetchMediaContent} from './src/firebase/questions/read-questions.js'
 import { updateQuestion, updateCategory } from './src/firebase/questions/update-questions.js'
 import { deleteQuestion, deleteCategory } from './src/firebase/questions/delete-questions.js'
 import { getStorage } from "firebase/storage"
@@ -349,6 +349,48 @@ app.post('/api/signOut', (req, res) => {
 // /// ///////////////////
 
 // Read Endpoints
+
+app.get("/api/getMediaUrl", async (req, res) => {
+    const { filePath } = req.query;
+
+    if (!filePath) {
+        return res.status(400).json({ success: false, message: 'filePath query parameter is required' });
+    }
+
+    try {
+        const url = await getMediaUrl(filePath);
+        res.status(200).json({ success: true, url });
+    } catch (error) {
+        console.error('Error fetching media URL:', error);
+        res.status(500).json({ success: false, message: 'Failed to get media URL' });
+    }
+});
+
+// Fetch Media Content Endpoint
+app.get("/api/fetchMediaContent", async (req, res) => {
+    const { filePath } = req.query;
+
+    if (!filePath) {
+        return res.status(400).json({ success: false, message: 'filePath query parameter is required' });
+    }
+
+    try {
+        // Use the fetchMediaContent function
+        const blob = await fetchMediaContent(filePath);
+
+        // Set appropriate headers
+        res.setHeader('Content-Type', blob.type);
+        res.setHeader('Content-Length', blob.size);
+
+        // Convert Blob to Buffer and send
+        const buffer = await blob.arrayBuffer();
+        res.send(Buffer.from(buffer));
+    } catch (error) {
+        console.error('Error fetching media content:', error);
+        res.status(500).json({ success: false, message: 'Failed to fetch media content' });
+    }
+});
+
 app.get("/api/readAllQuestions", async (req, res) => {
     try {
         const result = await readAllQuestions(firebase_db)
@@ -545,3 +587,4 @@ app.post('/api/deleteQuestion', async (req, res) => {
 });
 
 
+export { firebase_db, firebase_storage };
