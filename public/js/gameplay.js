@@ -453,6 +453,8 @@ document.addEventListener('DOMContentLoaded', () => {
         // Add functionality to return to the previous page
     })
 
+  
+
 
     $('.textq').click(function() {
         let colorDirection = $(this).attr("id");

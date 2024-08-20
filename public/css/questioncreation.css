@@ -3,13 +3,11 @@ body {
     font-family: Arial, sans-serif;
     margin: 0;
     padding: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
     background: linear-gradient(-45deg, #f83b01, #d4dd2c, #2370d5, #23d5ab);
     background-size: 400% 400%;
     animation: gradient 15s ease infinite;
+    min-height: 100vh;
+    overflow-y: auto;
 }
 
 @keyframes gradient {
@@ -26,10 +24,20 @@ body {
 
 /* Container styles */
 .container {
+    text-align: center;
     background-color: white;
     padding: 2rem;
     border-radius: 10px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    max-width: 90%;
+    width: 100%;
+    margin: 20px auto;
+}
+
+
+.container.collapsed {
+    max-height: 60px;
+    overflow: hidden;
 }
 
 /* Question container styles */
@@ -38,6 +46,12 @@ body {
     border-radius: 5px;
     overflow: hidden;
     margin-top: 20px;
+    transition: all 0.3s ease-in-out;
+}
+
+.question-container.collapsed {
+    max-height: 50px;
+    overflow: hidden;
 }
 
 /* Question header styles */
@@ -45,11 +59,31 @@ body {
     padding: 10px;
     background-color: #007bff;
     color: white;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.question-header .toggle-icon {
+    font-size: 1.2em;
+    transition: transform 0.3s ease-in-out;
+}
+
+.question-container.collapsed .question-header .toggle-icon {
+    transform: rotate(180deg);
 }
 
 /* Question body styles */
 .question-body {
     padding: 20px;
+    overflow-y: auto;
+    transition: max-height 0.3s ease-in-out;
+}
+
+.question-container.collapsed .question-body {
+    max-height: 0;
+    padding: 0;
 }
 
 /* Form control styles */
@@ -61,6 +95,7 @@ body {
 .btn {
     margin-top: 10px;
 }
+
 
 /* Custom font for headers */
 @font-face {
@@ -78,4 +113,30 @@ h1 {
     font-weight: bold;
     font-family: 'Bangers', cursive, Arial, sans-serif;
     color: #333;
+}
+
+/* Remove container scrollbar styles */
+.container::-webkit-scrollbar,
+.container::-webkit-scrollbar-track,
+.container::-webkit-scrollbar-thumb,
+.container::-webkit-scrollbar-thumb:hover {
+    display: none;
+}
+
+/* Scrollbar styles for body */
+body::-webkit-scrollbar {
+    width: 8px;
+}
+
+body::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+body::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+}
+
+body::-webkit-scrollbar-thumb:hover {
+    background: #555;
 }
